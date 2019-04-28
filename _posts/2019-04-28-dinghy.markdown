@@ -1,0 +1,13 @@
+---
+layout: post
+title:  "Dinghy: Horizontally Scaling Raft Clusers using Dynamic Timeouts"
+date:   2019-04-28
+categories: blog
+author: "Drew Ripberger"
+tags: [dinghy, raft, distributed systems]
+---
+
+
+
+The past few months I have been working on an a research project related to the [Raft](raft.github.io) consensus algorithm, which I called *Dinghy*.
+It was originally a project that I had started for the science fair, but I have continued its development passed that I am trying to continue exploring the viability of using dynamically set heartbeat and election timeouts to help a Raft cluster run more smoothly.

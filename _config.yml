@@ -6,15 +6,15 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: Drew Ribperger
+title: Drew Ripberger
 email: drew.ripberger@gmail.com
-description: The Liberal Jekyll Theme
+description: Golang and Research projects
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://drewrip.github.io" # the base hostname & protocol for your site
 github_username: drewrip
-paginate: 5
+paginate: 3
 theme-dark: true #Set to true to change to dark website theme
 
-plugins: [jekyll-paginate]
+plugins: [jekyll-paginate, kramdown]
 # Build settings
 markdown: kramdown
