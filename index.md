@@ -2,8 +2,16 @@
 layout: default
 ---
 
+<div style="padding-top: 5vh"></div>
+
+Hi! My name is Drew and I am a high school junior from Cincinnati, Ohio, interested in CS.
+
+Here you can find my résumé, or my blog where I a writting about stuff I am working on.
+
+I also have all my projects on [GitHub](https://github.com/drewrip) if you are looking for any of my work.
+
 <div class="home">
-  {% for post in site.posts%}
+{% for post in site.posts%}
   <div class="post postContent">
     <div  class="postDate"><time datetime="{{ post.date | date_to_xmlschema }}" itemprop="datePublished">{{ post.date | date: "%b %-d, %Y" }}</time>
     </div>
