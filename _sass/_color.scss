@@ -24,13 +24,14 @@ $l-page: $l-link-color;
  */
 $d-text-color:       #e7e7e7;
 $d-link-color:       #cccccc;
+$d-linkbase-color: #DC143C;
 $d-background-color: #191919;
 $d-brand-color:      #2a7ae2;
 $d-grey-color:       #A7A7A7;
 $d-grey-color-light: lighten($l-grey-color, 40%);
 $d-grey-color-dark:  darken($l-grey-color, 25%);
 $d-code: #2f2f33;
-$d-crimson: #DC143C;
+$d-blue: #146CDC;
 $d-nav: $d-link-color;
 $d-page: $d-link-color;
 
@@ -162,7 +163,7 @@ body.dark {
    * Links
    */
   a {
-    color: $d-link-color !important;
+    color: $d-blue !important;
 
     &:visited {
         color: darken($d-brand-color, 50%);
@@ -183,16 +184,16 @@ body.dark {
       color: darken($d-link-color, 50%) !important;
 
       &:visited {
-          color: $d-crimson !important;
-          border-color: $d-crimson;
+          color: $d-blue !important;
+          border-color: $d-blue;
       }
     }
     &.post-title-link{
       color: darken($d-link-color, 50%) !important;
 
       &:visited {
-          color: $d-crimson !important;
-          border-color: $d-crimson;
+          color: $d-blue !important;
+          border-color: $d-blue;
       }
     }
   }

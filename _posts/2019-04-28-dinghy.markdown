@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Dinghy: Horizontally Scaling Raft Clusers using Dynamic Timeouts"
-date:   2019-04-28
+title:  "Dinghy: Setting Sail with Dynamic Timeouts"
+date:   2019-05-10
 categories: blog
 author: "Drew Ripberger"
 tags: [dinghy, raft, distributed systems]
@@ -10,4 +10,26 @@ tags: [dinghy, raft, distributed systems]
 
 
 The past few months I have been working on an a research project related to the [Raft](raft.github.io) consensus algorithm, which I called *Dinghy*.
-It was originally a project that I had started for the science fair, but I have continued its development passed that I am trying to continue exploring the viability of using dynamically set heartbeat and election timeouts to help a Raft cluster run more smoothly.
+It was originally a project that I had started for the science fair, so I thought I would talk breifly about its development, and my progress.
+
+### Project Goals and Inspiration
+
+Originally, I had set out to come up with a way to help ease the burden of horizontally scaling Raft clusters. I was more intersted in what more nodes did to the cluster, rather than how individual nodes handled high loads.
+I had gone over a bunch of random ways that I might be able to do this in my head, some that I might actually explore a bit more later, but after doing extensive research on the current state of scaling and load balance, looking at how internal timeouts related scaling looked to be the most interesting and promising avenue to explore. A bit later I will talk a bit more about what I mean when I say dynamic timeouts.
+
+I had read a paper that further convinced me of the potential of the potential success of using dynamic, called [Lifeguard](https://arxiv.org/abs/1707.00788) out of Hashicorp Research. Lifeguard specifically talks about how asynchronous clusters using gossip protocols can minimize false positive rates when trying to detect downed nodes. It uses variables timeouts to detect which nodes might actually be down and which nodes might actually just be taking longer to respond to ping messages.
+
+### A Brief Rundown of Dinghy
+
+I found I was able to use the same principle of dynamic timeouts in a Raft cluster in order to better fit election timeouts and heartbeat intervals to clusters of large sizes. As a cluster size increases, we see an increased overall latency of the cluster due to leaders having to handle extra requests from more machines. From this idea Dinghy was born.
+
+If you would like to read any of the specific research I did into how Dinghy alters Raft, I implore you to read [the paper I wrote about Dinghy](https://github.com/drewrip/dinghy). I have a few different revisions available but, the current version was written using a custom test I wrote to simulate a Raft cluster. It still needs a good deal of work, but if you have any recommendations of how I might be able to improve my testing feel free to shoot me an email, or you can open a pull request if you have any contributions.
+
+There are some problems with my testing framework. In retrospect I probably should have made it discrete instead of using real time, as it ended up causing some accuracy issues. You can see the results of my main testing testing here:
+
+![](/assets/fdimage-1.png)
+
+### Future of the Project
+
+While for now this was mainly just a science fair project, I would love to expand my research into how clusters could use dynamic timeouts in this way in order to assist in horizontal scaling. One of the first goals I have for furthering my research would be to do some more research into into the distribution of message latency in order to find a way to find more ideal values for recalculated timeouts.
+I think with a bit more fundemental background research timeouts could yield a more general and robust solution to increasing cluster efficiency. Dinghy just started out as work on Raft, but I would like to apply this to Paxos, as it is a more fundemental algorithm and solution for distributed consensus. It appears to work with Raft, however establishing Dinghy's effectiveness with Paxos would give me more confidence in Dinghy in a theoretical distributed systems setting.
