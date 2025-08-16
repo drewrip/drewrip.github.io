@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css" />
+        <link rel="stylesheet" href="/style.css" />
+        <title>
+            
+A Commitment Scheme for Fair Draft Order Randomization
+
+        </title>
+        
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" integrity="sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          // customised options
+          // • auto-render specific keys, e.g.:
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          // • rendering keys, e.g.:
+          throwOnError : false
+        });
+    });
+</script>
+
+    </head>
+    <body>
+        <section class="section">
+            <div class="container">
+                
+<div id="post-container" class="pure-g">
+    <div class="pure-u-1 pure-u-sm-1-4"></div>
+    <div class="pure-u-1 pure-u-sm-1-2">
+        <div id="post-content">
+        <a href="/blog"><p>back to list</p></a>
+        <br>
+        <p><strong>2025-08-15</strong></p>
+        <h1 id="a-commitment-scheme-for-draft-order-randomization">A Commitment Scheme for Draft Order Randomization</h1>
+<p>Many fantasy football platforms have clear and transparent features for
+commissioners to randomize the draft order. Usually the commissioner can schedule
+a time to have the order randomly chosen, or it can be done ad hoc at a time of their choosing.
+Since some leagues however might have custom rules, platforms also allow commissioners to
+manually set a non-random arbitrarily chosen draft order. In certain circumstances the draft
+order can be very important to members of the league. If your league picks a random draft order,
+then naturally raises the question: how you know the draft order was chosen truly randomly?
+We will assume any order chosen by the platform itself is sufficiently random, but how do you
+know the commissioner didn't roll it a couple extra times until they got the spot they wanted?
+A good fantasy platform should be very transparent about the decision and should broadcast
+to the other members that the draft order has been updated. But this isn't universally the case.
+Or alternatively, if for whatever reason you set a random order manually (generated outside of
+the fantasy platform), how do you know the order is random?</p>
+<p>This blog is describing a simple <a href="https://en.wikipedia.org/wiki/Commitment_scheme">commitment scheme</a>
+that allows for a league of players to ensure the order was set fairly.
+The idea is really a simple variation on <a href="https://crypto.stanford.edu/cs355/23sp/lec3.pdf">"Coin Flipping"</a>,
+but please email me if you notice any holes or have any suggestions.</p>
+<h1 id="the-challenge">The Challenge</h1>
+<p>The goal is to design a simple system that allows a random draft order to be chosen for a league of
+players, while each can be confident it was chosen at random, and not manipulated by any
+other member of the league, <em>including</em> the commissioner.</p>
+<p>To simplify things, we will say we want to decide on some random <em>number</em>, not necessarily an order.
+There are many practical ways we can derive a random order from a simple random integer.
+One for instance is using the number to seed a previously discussed generated and using it to
+<code>shuffle</code> the teams in the league, see <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.shuffle.html#numpy.random.Generator.shuffle">numpy.random.Generator.shuffle</a>. This isn't very accessible though, so other more practical methods will be discussed towards the end.</p>
+<h1 id="the-method">The Method</h1>
+<p>First you need to decide on and assemble a few things:</p>
+<ol>
+<li>A stable channel for communication (league chat, text group chat, etc)</li>
+<li>A hash function and settings everyone is to use (<a href="https://tools.keycdn.com/sha256-online-generator">a simple website</a> that will give you a sha256 hash)</li>
+<li>An initial order of the teams (this won't influence the final random, but needs to stay the same)</li>
+</ol>
+<p>Some of these steps might sound overly specific but they are all important and are there for good reason.</p>
+<h2 id="step-1-start">Step 1: Start</h2>
+<p>The commissioner should announce that the order generation is starting.
+They should the initial order that will be used. It doesn't matter how they come up with this order, but
+it it needs to be agreed upon.
+Ask each member of the league to make up some secret phrase that they would be willing to share later.
+Have them write it down somewhere so they don't forget.</p>
+<h2 id="step-2-sharing">Step 2: Sharing</h2>
+<p>Next have them find the sha256 hash of their secret. They can do these by using the previously
+agreed upon website.
+Once they have the hash of their secret, they should share it in the league chat.
+It is very important that they only share the <em>hash</em> (the random string of letters and numbers)
+not the entire secret.</p>
+<h2 id="step-3-compare">Step 3: Compare</h2>
+<p>Once everyone has shared their hash, the commissioner should then ask everyone to share their secret.
+Each member of the league should then go and ensure that the hash of the secret they shared matches
+the hash that they reported during the "Sharing" phase. If any of the hashes do not match, this
+process should be restarted. A mismatch hash indicates either a simple mistake or an intention to
+rig the draft order.</p>
+<h2 id="step-4-evaluate">Step 4: Evaluate</h2>
+<p>Assuming each of the hashes match what each member initially reported, you can then move on to calculating the final
+random number.
+Compile all of the secrets that the members gave, <em>not</em> the hashes.
+Next, put the secrets in lexicographical (alphabetical) order.
+Finally, append all of the secrets together <em>in this order</em>. Do not put any spaces or other symbols
+between them.
+You can then place this one long string into the same sha256 calculator.
+The final sha256 hash is your piece of randomness. This is effectively a 256 bit random number.</p>
+<h2 id="step-5-derive">Step 5: Derive</h2>
+<p>You then need to take this large random number and produce an order. One straight forward way to do this
+would be by using some Python code to shuffle your initial order randomly and seeding the random number
+generator using the number you calculated in the last step.</p>
+<p>This could look something like this:</p>
+<pre data-lang="python" style="background-color:#282828;color:#fdf4c1aa;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#fa5c4b;">import </span><span>numpy </span><span style="color:#fa5c4b;">as </span><span>np
+</span><span>
+</span><span>teams </span><span style="color:#fe8019;">= </span><span style="color:#fdf4c1;">np.array([</span><span style="color:#b8bb26;">&quot;t1&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t2&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t3&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t4&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t5&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t6&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t7&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t8&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t9&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;t10&quot;</span><span style="color:#fdf4c1;">])
+</span><span>rng </span><span style="color:#fe8019;">= </span><span style="color:#fdf4c1;">np.random.default_rng(seed</span><span style="color:#fe8019;">=</span><span style="color:#d3869b;">0xae0e657769d5dcc53ef588405ad76db11b36da5995b05c5d844efbf2a952df0e</span><span style="color:#fdf4c1;">)
+</span><span style="color:#fdf4c1;">rng.shuffle(teams)
+</span><span style="color:#fabd2f;">print</span><span style="color:#fdf4c1;">(teams)
+</span></code></pre>
+<p>The most important thing is that you decide on the procedure for deriving the order from the random
+number before hand.</p>
+<h2 id="reminder">Reminder</h2>
+<p>After Step 2, everything should be verifiable by each member in the league. Meaning everyone
+should be able to easily replicate and verify the resulting draft order. If there are even small
+differences in the way the details, like combining everyone's secrets differently, or using
+different sha256 calculator websites, then the resulting orders may be different.
+The key thing that should impact the final draft order is everyone's secrets.</p>
+<h1 id="example">Example</h1>
+<p>Let's work a simple example of what this might look like in tiny 4 team Sleeper league.</p>
+<p>The 4 teams are:</p>
+<ul>
+<li>Sara's Team (Commissioner)</li>
+<li>Todd's Squad</li>
+<li>Aditi's Team</li>
+<li>Larry's Team</li>
+</ul>
+<p>Sara picks the following initial starting order:</p>
+<ol>
+<li>Todd's Squad</li>
+<li>Aditi's Team</li>
+<li>Sara's Team</li>
+<li>Larry's Team</li>
+</ol>
+<p>Sara then says they'll use <a href="https://tools.keycdn.com/sha256-online-generator">the following sha256 calculator website</a>.</p>
+<p>The process proceeds as follows:</p>
+<ul>
+<li>Sara requests everyone pick a secret and send the sha256 hash in the league chat</li>
+<li>Aditi sends the hash <code>8dcbd7a90e4970405efdfe5b4f598461c3b29a8dade6eb70893f3edf90092365</code></li>
+<li>Todd sends the hash <code>7c95d7bf76008830030d2383d60f88ba97e69e50ea8e0655cd69ad54c7d7cafa</code></li>
+<li>Sara sends the hash <code>a2d0116ab97dd735c6108567a8c008d83829705e471cf57fab1f414eb0f1cfb0</code></li>
+<li>Larry sends the hash <code>125a6774223cea3b09bbba0b6254e746926553ce07f6de256e8be378e85e5fff</code></li>
+<li>Now that everyone has sent their hash, Sara requests everyone reveal their secret</li>
+<li>Aditi reveals her secret to be <code>Aditi rules 5674</code></li>
+<li>Todd reveals his secret to be <code>super-secret-phrase-4321</code></li>
+<li>Sara reveals her secret to be <code>54345317888653</code></li>
+<li>Larry reveals his secret to be <code>secret001121</code></li>
+<li>Everyone in the league confirms that all of the hash's correctly correspond to their secret</li>
+<li>Sara alphabetically sorts all of the secrets:
+<ul>
+<li><code>54345317888653</code></li>
+<li><code>Aditi rules 5674</code></li>
+<li><code>secret001121</code></li>
+<li><code>super-secret-phrase-4321</code></li>
+</ul>
+</li>
+<li>Sara then combines these secrets in this order to get: <code>54345317888653Aditi rules 5674secret001121super-secret-phrase-4321</code></li>
+<li>Sara then takes the sha256 hash of this value to get: <code>54e66f9507de74eeed0bd05921a887687fef8b89c82d84991d20223a248bce04</code></li>
+<li>Sara then runs the following script:
+<ul>
+<li><pre data-lang="python" style="background-color:#282828;color:#fdf4c1aa;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#fa5c4b;">import </span><span>numpy </span><span style="color:#fa5c4b;">as </span><span>np
+</span><span>
+</span><span style="font-style:italic;color:#928374;"># This is the initial order decided before starting the process
+</span><span>teams </span><span style="color:#fe8019;">= </span><span style="color:#fdf4c1;">np.array([</span><span style="color:#b8bb26;">&quot;Todd&#39;s Squad&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;Aditi&#39;s Team&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;Sara&#39;s Team&quot;</span><span style="color:#fdf4c1;">, </span><span style="color:#b8bb26;">&quot;Larry&#39;s Team&quot;</span><span style="color:#fdf4c1;">])
+</span><span style="font-style:italic;color:#928374;"># This is the hash we found in the previous step
+</span><span>our_random </span><span style="color:#fe8019;">= </span><span style="color:#d3869b;">0x54e66f9507de74eeed0bd05921a887687fef8b89c82d84991d20223a248bce04
+</span><span>rng </span><span style="color:#fe8019;">= </span><span style="color:#fdf4c1;">np.random.default_rng(seed</span><span style="color:#fe8019;">=</span><span style="color:#fdf4c1;">our_random)
+</span><span style="color:#fdf4c1;">rng.shuffle(teams)
+</span><span style="color:#fabd2f;">print</span><span style="color:#fdf4c1;">(teams)
+</span><span style="font-style:italic;color:#928374;"># [&quot;Aditi&#39;s Team&quot;, &quot;Sara&#39;s Team&quot;, &quot;Todd&#39;s Squad&quot;, &quot;Larry&#39;s Team&quot;]
+</span></code></pre>
+</li>
+</ul>
+</li>
+<li>The script shows the order is:
+<ol>
+<li>Aditi's Team</li>
+<li>Sara's Team</li>
+<li>Todd's Squad</li>
+<li>Larry's Team</li>
+</ol>
+</li>
+<li>The rest of the league members verify this result by rerunning the process and ensuring they
+get the same result</li>
+</ul>
+<h1 id="why-this-works-and-why-you-probably-shouldn-t-use-it">Why this works and Why you (probably) shouldn't use it</h1>
+<p>What we'd really like to be able to do, is just have everyone pitch in their
+secrets, hash them into one number, and then run with that as our randomness
+used to generate the order.
+However, the issue is that if <em>anyone</em> in the league as the opportunity to go last,
+which is obviously inevitable, they have the opportunity to "choose" the draft order
+by picking a secret that generates a hash that shuffles the order in a desirable way.</p>
+<p>The key that makes this approach work is the hash function. These functions
+take some input data (our secrets) and produce some random looking output.
+In addition, these functions are not reversible. So if you have the hash, there is
+absolutely no way to know the original input. However, if the original input is later
+revealed it's trivially easy to get the same hash. The hash that each player
+provides are commitments. Meaning that each player is "committing" to their secret
+without having to reveal to anyone what that secret is. If a player later tries to
+lie by saying their secret is something other than what they originally committed to, it'll be easy
+to confirm they lied by hashing their secret and seeing it doesn't match their commitment.</p>
+<p>So by making every player commit to their secret before revealing them, we can be sure that
+no one, including the last player to provide their secret, can manipulate the draft order.</p>
+<p>This is all great, but realistically your league of 10 to 12 aren't going to go through all of this effort.
+If you use a more modern platform like Sleeper that announces anytime the draft order changes or is re-rolled,
+that is really just as fair as this. If you have those options available just use those.</p>
+
+        </div>
+    </div>
+    <div class="pure-u-1 pure-u-sm-1-4"></div>
+</div>
+
+            </div>
+        </section>
+    </body>
+</html>
